@@ -639,8 +639,7 @@ function App() {
     try {
       const result = await listBackups(config.installPath);
       if (result.success && result.message) {
-        setBackupList(result.message.split("
-").filter(Boolean));
+        setBackupList(result.message.split("\n").filter(Boolean));
       } else {
         setBackupList([]);
       }
@@ -656,8 +655,7 @@ function App() {
       setBackupStatus(result.message);
       // Refresh list
       const list = await listBackups(config.installPath);
-      if (list.success && list.message) setBackupList(list.message.split("
-").filter(Boolean));
+      if (list.success && list.message) setBackupList(list.message.split("\n").filter(Boolean));
     } catch {
       setBackupStatus("Backup failed.");
     } finally {

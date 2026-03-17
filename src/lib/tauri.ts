@@ -125,3 +125,32 @@ export async function validateOpenAIKeyLive(key: string): Promise<CommandRespons
 export async function validateDiscordTokenLive(token: string): Promise<CommandResponse> {
   return await invoke<CommandResponse>("validate_discord_token_live", { token });
 }
+
+// ── Batch 3 ──────────────────────────────────────────────────
+export async function sendNotification(title: string, body: string): Promise<CommandResponse> {
+  return await invoke<CommandResponse>("send_notification", { title, body });
+}
+
+export async function setDiscordAvatar(path: string, imageUrl: string): Promise<CommandResponse> {
+  return await invoke<CommandResponse>("set_discord_avatar", { path, imageUrl });
+}
+
+export async function readOpenClawConfig(): Promise<CommandResponse> {
+  return await invoke<CommandResponse>("read_openclaw_config");
+}
+
+export async function writeOpenClawConfigRaw(content: string): Promise<CommandResponse> {
+  return await invoke<CommandResponse>("write_openclaw_config_raw", { content });
+}
+
+export async function createBackup(path: string): Promise<CommandResponse> {
+  return await invoke<CommandResponse>("create_backup", { path });
+}
+
+export async function listBackups(path: string): Promise<CommandResponse> {
+  return await invoke<CommandResponse>("list_backups", { path });
+}
+
+export async function restoreBackup(path: string, backupName: string): Promise<CommandResponse> {
+  return await invoke<CommandResponse>("restore_backup", { path, backupName });
+}
