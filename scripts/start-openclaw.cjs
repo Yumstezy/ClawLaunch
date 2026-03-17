@@ -7,10 +7,16 @@ const installPath = process.argv[2] || process.cwd();
 const homeDir = os.homedir();
 const openclawDir = path.join(homeDir, ".openclaw");
 const openclawBinDir = path.join(openclawDir, "bin");
-const openclawBinary = path.join(openclawBinDir, "openclaw");
+// FIX: use .exe on Windows
+const openclawBinary = path.join(
+  openclawBinDir,
+  process.platform === "win32" ? "openclaw.exe" : "openclaw"
+);
 
 const gatewayLogPath = path.join(installPath, "gateway.log");
 const gatewayStatusPath = path.join(installPath, "gateway-status.json");
+
+const isWindows = process.platform === "win32";
 
 function log(message) {
   const line = `[${new Date().toISOString()}] ${message}\n`;
@@ -22,10 +28,10 @@ function log(message) {
 function resolveNodeBinary() {
   const candidates = [
     process.execPath,
-    "/opt/homebrew/bin/node",
-    "/usr/local/bin/node",
-    "/usr/bin/node",
-    "/bin/node",
+    isWindows ? null : "/opt/homebrew/bin/node",
+    isWindows ? null : "/usr/local/bin/node",
+    isWindows ? null : "/usr/bin/node",
+    isWindows ? null : "/bin/node",
   ].filter(Boolean);
 
   for (const candidate of candidates) {
@@ -43,11 +49,7 @@ function writeStatus(status, detail = "") {
   fs.writeFileSync(
     gatewayStatusPath,
     JSON.stringify(
-      {
-        status,
-        updatedAt: new Date().toISOString(),
-        detail,
-      },
+      { status, updatedAt: new Date().toISOString(), detail },
       null,
       2
     )
@@ -63,7 +65,10 @@ try {
   }
 
   if (!fs.existsSync(openclawBinary)) {
-    throw new Error(`OpenClaw binary not found at ${openclawBinary}`);
+    throw new Error(
+      `OpenClaw binary not found at ${openclawBinary}. ` +
+      `Run the installer first before starting the gateway.`
+    );
   }
 
   log("Starting OpenClaw gateway...");
@@ -72,14 +77,21 @@ try {
   const out = fs.openSync(gatewayLogPath, "a");
   const err = fs.openSync(gatewayLogPath, "a");
 
+  // FIX: use semicolon PATH separator on Windows
+  const pathSep = isWindows ? ";" : ":";
+
   const child = spawn(openclawBinary, ["gateway"], {
     detached: false,
     stdio: ["ignore", out, err],
     env: {
       ...process.env,
-      PATH: `${path.dirname(nodeBinary)}:${openclawBinDir}:${process.env.PATH || ""}`,
+      PATH: `${path.dirname(nodeBinary)}${pathSep}${openclawBinDir}${pathSep}${process.env.PATH || ""}`,
     },
   });
+
+  if (!child.pid) {
+    throw new Error("Failed to spawn OpenClaw gateway — no PID returned.");
+  }
 
   log(`OpenClaw process spawned with pid ${child.pid}`);
   writeStatus("running", `PID ${child.pid}`);
@@ -88,6 +100,12 @@ try {
     const message = `OpenClaw gateway exited with code ${code}`;
     log(message);
     writeStatus("stopped", message);
+  });
+
+  child.on("error", (err) => {
+    const message = `OpenClaw gateway process error: ${err.message}`;
+    log(message);
+    writeStatus("error", message);
   });
 
   process.exit(0);

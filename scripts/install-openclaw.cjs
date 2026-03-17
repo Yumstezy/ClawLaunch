@@ -14,8 +14,14 @@ const manifestPath = path.join(installPath, "install-manifest.json");
 const homeDir = os.homedir();
 const openclawDir = path.join(homeDir, ".openclaw");
 const openclawBinDir = path.join(openclawDir, "bin");
-const openclawBinary = path.join(openclawBinDir, "openclaw");
+// On Windows the binary has .exe extension
+const openclawBinary = path.join(
+  openclawBinDir,
+  process.platform === "win32" ? "openclaw.exe" : "openclaw"
+);
 const openclawConfigPath = path.join(homeDir, ".openclaw", "openclaw.json");
+
+const isWindows = process.platform === "win32";
 
 function log(message) {
   const line = `[${new Date().toISOString()}] ${message}\n`;
@@ -35,10 +41,10 @@ function readJson(filePath) {
 function resolveNodeBinary() {
   const candidates = [
     process.execPath,
-    "/opt/homebrew/bin/node",
-    "/usr/local/bin/node",
-    "/usr/bin/node",
-    "/bin/node",
+    isWindows ? null : "/opt/homebrew/bin/node",
+    isWindows ? null : "/usr/local/bin/node",
+    isWindows ? null : "/usr/bin/node",
+    isWindows ? null : "/bin/node",
   ].filter(Boolean);
 
   for (const candidate of candidates) {
@@ -62,79 +68,52 @@ function run(command, options = {}) {
     stdio: "pipe",
     env: {
       ...process.env,
-      PATH: `${path.dirname(nodeBinary)}:${openclawBinDir}:${process.env.PATH || ""}`,
+      PATH: isWindows
+        ? `${path.dirname(nodeBinary)};${openclawBinDir};${process.env.PATH || ""}`
+        : `${path.dirname(nodeBinary)}:${openclawBinDir}:${process.env.PATH || ""}`,
     },
-    shell: "/bin/bash",
+    // FIX: use cmd.exe on Windows instead of /bin/bash
+    shell: isWindows ? true : "/bin/bash",
     ...options,
   });
 }
 
 function resolveModel(provider, profile) {
-  if (provider === "anthropic") {
-    return "anthropic/claude-sonnet-4-6";
+  switch (provider) {
+    case "anthropic":
+      return "anthropic/claude-sonnet-4-6";
+    case "google":
+      return "google/gemini-3-pro";
+    case "xai":
+      return "xai/grok-3";
+    case "mistral":
+      return "mistral/mistral-large-latest";
+    case "openrouter":
+      return "openrouter/auto";
+    case "local":
+      return profile === "coding"
+        ? "ollama/qwen2.5-coder:latest"
+        : "ollama/qwen2.5:latest";
+    default:
+      return "openai/gpt-4.1-mini";
   }
-
-  if (provider === "local") {
-    return profile === "coding"
-      ? "ollama/qwen2.5-coder:latest"
-      : "ollama/qwen2.5:latest";
-  }
-
-  return "openai/gpt-4.1-mini";
 }
 
 function buildProfileDefaults(profile) {
   switch (profile) {
     case "coding":
-      return {
-        responsePrefix: "[coding]",
-        browserEnabled: true,
-        shellEnabled: true,
-        automationEnabled: false,
-      };
+      return { responsePrefix: "[coding]", browserEnabled: true, shellEnabled: true, automationEnabled: false };
     case "daily":
-      return {
-        responsePrefix: "[daily]",
-        browserEnabled: true,
-        shellEnabled: false,
-        automationEnabled: false,
-      };
+      return { responsePrefix: "[daily]", browserEnabled: true, shellEnabled: false, automationEnabled: false };
     case "gaming":
-      return {
-        responsePrefix: "[gaming]",
-        browserEnabled: true,
-        shellEnabled: false,
-        automationEnabled: false,
-      };
+      return { responsePrefix: "[gaming]", browserEnabled: true, shellEnabled: false, automationEnabled: false };
     case "tasks":
-      return {
-        responsePrefix: "[tasks]",
-        browserEnabled: false,
-        shellEnabled: true,
-        automationEnabled: true,
-      };
+      return { responsePrefix: "[tasks]", browserEnabled: false, shellEnabled: true, automationEnabled: true };
     default:
-      return {
-        responsePrefix: "[mixed]",
-        browserEnabled: true,
-        shellEnabled: true,
-        automationEnabled: true,
-      };
+      return { responsePrefix: "[mixed]", browserEnabled: true, shellEnabled: true, automationEnabled: true };
   }
 }
 
-function buildPurposePrompt(profile, purpose) {
-  const safePurpose = (purpose || "").trim();
-
-  return [
-    `You are running in the ${profile} profile.`,
-    safePurpose
-      ? `Primary purpose: ${safePurpose}`
-      : "Primary purpose: Help the user clearly and effectively.",
-    "Stay aligned with the configured purpose.",
-    "Be useful, clear, and practical.",
-  ].join(" ");
-}
 
 function buildPresetConfig(state, secrets) {
   const profile = state.profile || "mixed";
@@ -145,39 +124,33 @@ function buildPresetConfig(state, secrets) {
   const defaults = buildProfileDefaults(profile);
 
   const config = {
-    gateway: {
-      mode: "local",
-      port: 18789,
-    },
-    channels: {
-      defaults: {
-        groupPolicy: "open",
-      },
-    },
+    gateway: { mode: "local", port: 18789 },
+    channels: { defaults: { groupPolicy: "open" } },
     agents: {
       defaults: {
-        model: {
-          primary: resolveModel(provider, profile),
-        },
-        systemPrompt: buildPurposePrompt(profile, botPurpose),
+        model: { primary: resolveModel(provider, profile) },
       },
     },
-    env: {
-      vars: {},
-    },
-    messages: {
-      responsePrefix: defaults.responsePrefix,
-    },
+    env: { vars: {} },
+    messages: { responsePrefix: defaults.responsePrefix },
   };
 
-  if (provider === "openai" && secrets.openai_api_key) {
+  // API keys for all supported providers
+  if (provider === "openai" && secrets.openai_api_key)
     config.env.vars.OPENAI_API_KEY = secrets.openai_api_key;
-  }
+  if (provider === "anthropic" && secrets.anthropic_api_key)
+    config.env.vars.ANTHROPIC_API_KEY = secrets.anthropic_api_key;
+  if (provider === "google" && secrets.google_api_key)
+    config.env.vars.GOOGLE_API_KEY = secrets.google_api_key;
+  if (provider === "xai" && secrets.xai_api_key)
+    config.env.vars.XAI_API_KEY = secrets.xai_api_key;
+  if (provider === "mistral" && secrets.mistral_api_key)
+    config.env.vars.MISTRAL_API_KEY = secrets.mistral_api_key;
+  if (provider === "openrouter" && secrets.openrouter_api_key)
+    config.env.vars.OPENROUTER_API_KEY = secrets.openrouter_api_key;
 
   if (defaults.browserEnabled || permissions.browser) {
-    config.browser = {
-      enabled: true,
-    };
+    config.browser = { enabled: true };
   }
 
   if (defaults.shellEnabled || permissions.terminal) {
@@ -188,9 +161,7 @@ function buildPresetConfig(state, secrets) {
   }
 
   if (defaults.automationEnabled || permissions.automation) {
-    config.automation = {
-      enabled: true,
-    };
+    config.automation = { enabled: true };
   }
 
   if (platforms.includes("discord") && secrets.discord_bot_token) {
@@ -213,12 +184,51 @@ function buildPresetConfig(state, secrets) {
     };
   }
 
+  if (platforms.includes("slack") && secrets.slack_bot_token) {
+    config.channels.slack = {
+      enabled: true,
+      token: secrets.slack_bot_token,
+      dmPolicy: "open",
+      groupPolicy: "open",
+    };
+  }
+
+  if (platforms.includes("googlechat") && secrets.googlechat_webhook) {
+    config.channels.googlechat = {
+      enabled: true,
+      webhook: secrets.googlechat_webhook,
+    };
+  }
+
+  if (platforms.includes("whatsapp")) {
+    config.channels.whatsapp = {
+      enabled: true,
+      dmPolicy: "open",
+      groupPolicy: "open",
+    };
+  }
+
+  if (platforms.includes("signal")) {
+    config.channels.signal = {
+      enabled: true,
+      dmPolicy: "open",
+    };
+  }
+
   return config;
 }
 
 try {
   ensureDir(installPath);
   ensureDir(openclawDir);
+
+  if (!fs.existsSync(launcherStatePath)) {
+    throw new Error(`launcher-state.json not found at ${launcherStatePath}. Make sure ClawLaunch wrote it before running the installer.`);
+  }
+
+  if (!fs.existsSync(secretsPath)) {
+    throw new Error(`secrets.json not found at ${secretsPath}. Make sure your tokens were saved before running the installer.`);
+  }
 
   const state = readJson(launcherStatePath);
   const secrets = readJson(secretsPath);
@@ -235,11 +245,23 @@ try {
   const nodeVersion = run(`"${nodeBinary}" --version`).toString().trim();
   log(`Node detected: ${nodeVersion}`);
 
-  log("Installing OpenClaw with local-prefix installer...");
-  run("curl -fsSL --proto '=https' --tlsv1.2 https://openclaw.ai/install-cli.sh | bash");
+  log("Installing OpenClaw...");
+
+  if (isWindows) {
+    // Windows install uses PowerShell
+    run(
+      `powershell -NoProfile -ExecutionPolicy Bypass -Command "irm https://openclaw.ai/install-cli.ps1 | iex"`
+    );
+  } else {
+    // macOS/Linux install
+    run("curl -fsSL --proto '=https' --tlsv1.2 https://openclaw.ai/install-cli.sh | bash");
+  }
 
   if (!fs.existsSync(openclawBinary)) {
-    throw new Error(`Expected OpenClaw binary at ${openclawBinary}, but it was not found.`);
+    throw new Error(
+      `Expected OpenClaw binary at ${openclawBinary}, but it was not found after install. ` +
+      `Check the installer output above for errors.`
+    );
   }
 
   const versionOut = run(`"${openclawBinary}" --version`).toString().trim();

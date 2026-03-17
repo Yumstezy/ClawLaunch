@@ -5,6 +5,20 @@
   "windows": ["main"],
   "permissions": [
     "core:default",
-    "opener:default"
+    "opener:default",
+    "shell:allow-spawn",
+    "shell:allow-execute",
+    "shell:allow-open",
+    "store:allow-load",
+    "store:allow-set",
+    "store:allow-get",
+    "store:allow-save",
+    "store:allow-delete",
+    "store:allow-clear",
+    "store:allow-keys",
+    "store:allow-entries",
+    "store:allow-length",
+    "store:allow-has",
+    "core:tray:default"
   ]
 }

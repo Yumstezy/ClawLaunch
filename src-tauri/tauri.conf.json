@@ -13,11 +13,14 @@
         "title": "ClawLaunch",
         "width": 1200,
         "height": 820,
-        "resizable": true
+        "minWidth": 800,
+        "minHeight": 600,
+        "resizable": true,
+        "center": true
       }
     ],
     "security": {
-      "csp": null
+      "csp": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: asset: https://asset.localhost"
     }
   },
   "bundle": {
@@ -30,6 +33,19 @@
       "icons/128x128@2x.png",
       "icons/icon.icns",
       "icons/icon.ico"
-    ]
+    ],
+    "macOS": {
+      "minimumSystemVersion": "10.15",
+      "exceptionDomain": "",
+      "signingIdentity": null,
+      "entitlements": null
+    },
+    "windows": {
+      "certificateThumbprint": null,
+      "digestAlgorithm": "sha256",
+      "timestampUrl": ""
+    },
+    "shortDescription": "Easy one-click ClawBot installer and launcher",
+    "longDescription": "ClawLaunch lets you install and run ClawBot on your computer without using the terminal. Just enter your API keys, pick a profile, and click Install."
   }
 }

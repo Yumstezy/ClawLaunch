@@ -10,9 +10,11 @@
     "tauri": "tauri"
   },
   "dependencies": {
-    "@discordjs/rest": "^2.6.0",
+    "@discordjs/rest": "^0.4.1",
     "@tauri-apps/api": "^2",
     "@tauri-apps/plugin-opener": "^2",
+    "@tauri-apps/plugin-shell": "^2.3.5",
+    "@tauri-apps/plugin-store": "^2.4.2",
     "discord-api-types": "^0.38.42",
     "discord.js": "^13.17.1",
     "openai": "^6.27.0",

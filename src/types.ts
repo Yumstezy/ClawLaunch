@@ -1,6 +1,21 @@
 export type ProfileKey = "coding" | "daily" | "gaming" | "tasks" | "mixed";
-export type PlatformKey = "discord" | "telegram";
-export type ModelProvider = "openai" | "anthropic" | "local";
+
+export type PlatformKey =
+  | "discord"
+  | "telegram"
+  | "whatsapp"
+  | "slack"
+  | "signal"
+  | "googlechat";
+
+export type ModelProvider =
+  | "openai"
+  | "anthropic"
+  | "google"
+  | "xai"
+  | "mistral"
+  | "local"
+  | "openrouter";
 
 export type Permissions = {
   files: boolean;
@@ -23,6 +38,15 @@ export type LauncherConfig = {
 
 export type LauncherSecrets = {
   openaiApiKey: string;
+  anthropicApiKey: string;
+  googleApiKey: string;
+  xaiApiKey: string;
+  mistralApiKey: string;
+  openrouterApiKey: string;
   discordBotToken: string;
   telegramBotToken: string;
+  whatsappEnabled: boolean;
+  slackBotToken: string;
+  signalEnabled: boolean;
+  googlechatWebhook: string;
 };
