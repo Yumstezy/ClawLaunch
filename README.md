@@ -2,13 +2,27 @@
 
 <div align="center">
 
-![ClawLaunch](branding/branding:clawlaunch-icon.png)
+# 🦞 ClawLaunch
 
 **The easiest way to run your own AI bot — no terminal required.**
 
-[![Latest Release](https://img.shields.io/github/v/release/Yumstezy/clawlaunch?color=00FFB2&label=Download&style=for-the-badge)](https://github.com/Yumstezy/clawlaunch/releases/latest)
-[![Platform](https://img.shields.io/badge/platform-macOS-lightgrey?style=for-the-badge)](https://github.com/Yumstezy/clawlaunch/releases/latest)
-[![Built with Tauri](https://img.shields.io/badge/built%20with-Tauri-blue?style=for-the-badge)](https://tauri.app)
+Install OpenClaw on your Mac or Windows PC with one click.Connect to Discord, Telegram, WhatsApp, Slack and more.Powered by any AI provider you choose.
+
+<br>
+
+[![Download](https://img.shields.io/github/v/release/Yumstezy/clawlaunch?color=00FFB2&label=⬇%20Download&style=for-the-badge)](https://github.com/Yumstezy/clawlaunch/releases/latest)
+&nbsp;
+[![macOS](https://img.shields.io/badge/macOS-supported-00FFB2?style=for-the-badge&logo=apple&logoColor=white)](#download)
+&nbsp;
+[![Windows](https://img.shields.io/badge/Windows-supported-00FFB2?style=for-the-badge&logo=windows&logoColor=white)](#download)
+
+[![Built with Tauri](https://img.shields.io/badge/built%20with-Tauri-24C8DB?style=for-the-badge&logo=tauri&logoColor=white)](https://tauri.app)
+&nbsp;
+[![Powered by OpenClaw](https://img.shields.io/badge/powered%20by-OpenClaw-00FFB2?style=for-the-badge)](https://openclaw.ai)
+&nbsp;
+[![License](https://img.shields.io/badge/license-MIT-grey?style=for-the-badge)](LICENSE)
+
+<br>
 
 </div>
 
@@ -56,8 +70,9 @@ You paste your API key, pick a chat platform, click Install — and your persona
 
 | Platform | Download |
 |----------|----------|
-| macOS (Apple Silicon) | `ClawLaunch_0.1.0_aarch64.dmg` |
-| Windows | Coming soon |
+| macOS (Apple Silicon) | `ClawLaunch_*_aarch64.dmg` |
+| macOS (Intel) | `ClawLaunch_*_x64.dmg` |
+| Windows (64-bit) | `ClawLaunch_*_x64-setup.exe` |
 
 ---
 
