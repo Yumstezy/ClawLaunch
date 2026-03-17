@@ -1,0 +1,96 @@
+name: Build & Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: macos-latest
+            target: aarch64-apple-darwin
+            name: macOS (Apple Silicon)
+          - platform: macos-13
+            target: x86_64-apple-darwin
+            name: macOS (Intel)
+          - platform: windows-latest
+            target: x86_64-pc-windows-msvc
+            name: Windows (64-bit)
+
+    runs-on: ${{ matrix.platform }}
+    name: Build ${{ matrix.name }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: Rust cache
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: './src-tauri -> target'
+
+      - name: Install frontend dependencies
+        run: npm install
+
+      # macOS only — needed for code signing (leave blank for unsigned builds)
+      - name: Import signing certificate (macOS)
+        if: matrix.platform == 'macos-latest' || matrix.platform == 'macos-13'
+        env:
+          APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
+          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+          KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
+        run: |
+          if [ -n "$APPLE_CERTIFICATE" ]; then
+            echo "$APPLE_CERTIFICATE" | base64 --decode > certificate.p12
+            security create-keychain -p "$KEYCHAIN_PASSWORD" build.keychain
+            security default-keychain -s build.keychain
+            security unlock-keychain -p "$KEYCHAIN_PASSWORD" build.keychain
+            security import certificate.p12 -k build.keychain -P "$APPLE_CERTIFICATE_PASSWORD" -T /usr/bin/codesign
+            security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN_PASSWORD" build.keychain
+          else
+            echo "No signing certificate — building unsigned"
+          fi
+
+      - name: Build Tauri app
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+        with:
+          tagName: ${{ github.ref_name }}
+          releaseName: ClawLaunch ${{ github.ref_name }}
+          releaseBody: |
+            ## ClawLaunch ${{ github.ref_name }}
+
+            The easiest way to run your own AI bot — no terminal required.
+
+            ### Download
+            - **macOS Apple Silicon** → `ClawLaunch_*_aarch64.dmg`
+            - **macOS Intel** → `ClawLaunch_*_x64.dmg`
+            - **Windows** → `ClawLaunch_*_x64-setup.exe`
+
+            ### First launch (macOS)
+            Right-click the app → Open (required since the app is unsigned)
+
+            ### Requirements
+            - Node.js 22+ — free at https://nodejs.org
+            - An AI API key (OpenAI, Anthropic, Google, etc.)
+          releaseDraft: false
+          prerelease: false
+          args: --target ${{ matrix.target }}
