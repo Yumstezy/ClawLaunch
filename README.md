@@ -6,8 +6,8 @@
 
 **The easiest way to run your own AI bot — no terminal required.**
 
-[![Latest Release](https://img.shields.io/github/v/release/Yumstezy/debuging-clawlaunch?color=00FFB2&label=Download&style=for-the-badge)](https://github.com/Yumstezy/debuging-clawlaunch/releases/latest)
-[![Platform](https://img.shields.io/badge/platform-macOS-lightgrey?style=for-the-badge)](https://github.com/Yumstezy/debuging-clawlaunch/releases/latest)
+[![Latest Release](https://img.shields.io/github/v/release/Yumstezy/clawlaunch?color=00FFB2&label=Download&style=for-the-badge)](https://github.com/Yumstezy/clawlaunch/releases/latest)
+[![Platform](https://img.shields.io/badge/platform-macOS-lightgrey?style=for-the-badge)](https://github.com/Yumstezy/clawlaunch/releases/latest)
 [![Built with Tauri](https://img.shields.io/badge/built%20with-Tauri-blue?style=for-the-badge)](https://tauri.app)
 
 </div>
@@ -52,7 +52,7 @@ You paste your API key, pick a chat platform, click Install — and your persona
 
 ## Download
 
-**[→ Download the latest release](https://github.com/Yumstezy/debuging-clawlaunch/releases/latest)**
+**[→ Download the latest release](https://github.com/Yumstezy/clawlaunch/releases/latest)**
 
 | Platform | Download |
 |----------|----------|
@@ -63,7 +63,7 @@ You paste your API key, pick a chat platform, click Install — and your persona
 
 ## Installation
 
-1. Download `ClawLaunch_0.1.0_aarch64.dmg` from the [Releases page](https://github.com/Yumstezy/debuging-clawlaunch/releases/latest)
+1. Download `ClawLaunch_0.1.0_aarch64.dmg` from the [Releases page](https://github.com/Yumstezy/clawlaunch/releases/latest)
 2. Open the DMG and drag **ClawLaunch** to your Applications folder
 3. Right-click the app → **Open** (required on first launch since the app is unsigned)
 4. Follow the setup wizard — takes about 2 minutes
@@ -135,7 +135,7 @@ More platforms (iMessage, Microsoft Teams, Matrix, IRC, and more) can be added m
 
 ```bash
 # Clone the repo
-git clone https://github.com/Yumstezy/debuging-clawlaunch.git
+git clone https://github.com/Yumstezy/clawlaunch.git
 cd debuging-clawlaunch
 
 # Install dependencies
@@ -165,7 +165,7 @@ MIT — see [LICENSE](LICENSE) for details.
   <p>Built with ❤️ to make AI accessible to everyone.</p>
   <p>
     <a href="https://openclaw.ai">OpenClaw</a> ·
-    <a href="https://github.com/Yumstezy/debuging-clawlaunch/releases">Download</a> ·
-    <a href="https://github.com/Yumstezy/debuging-clawlaunch/issues">Report a bug</a>
+    <a href="https://github.com/Yumstezy/clawlaunch/releases">Download</a> ·
+    <a href="https://github.com/Yumstezy/clawlaunch/issues">Report a bug</a>
   </p>
 </div>
